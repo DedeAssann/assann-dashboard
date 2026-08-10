@@ -18,7 +18,7 @@ const milestones=[
 {date:'18 septembre',name:'Week-end d’intégration'},
 {date:'23 septembre',name:'Réunion mobilité internationale'}
 ];
-const ensma=[
+const fallbackEnsma=[
 {date:'7 sept.',name:'Accueil & présentation EDT',meta:'09:00–11:00 · A102'},
 {date:'7 sept.',name:'Rencontre enseignants',meta:'11:00–11:45 · A102'},
 {date:'7 sept.',name:'Langues à l’ENSMA',meta:'13:30–15:30'},
@@ -26,6 +26,7 @@ const ensma=[
 {date:'18 sept.',name:'Week-end d’intégration',meta:'Jalon ENSMA'},
 {date:'23 sept.',name:'Mobilité internationale',meta:'13:45–15:00 · A102'}
 ];
+let ensma=[...fallbackEnsma];
 const opportunities=[
 {name:'Stage 1A — Toulouse',desc:'ONERA · Safran Power Units · Airbus · Liebherr',tag:'Priorité'},
 {name:'ESA Academy',desc:'Access to Space · Systems Engineering',tag:'Très fort fit'},
@@ -48,18 +49,29 @@ function mondayOf(d){const x=new Date(d);const day=(x.getDay()+6)%7;x.setDate(x.
 function weekDates(){const m=mondayOf(today);return Array.from({length:7},(_,i)=>{const d=new Date(m);d.setDate(m.getDate()+i);return d})}
 function completedToday(){return habits.filter(h=>history[todayKey]?.[h]).length}
 function pct(n,d){return d?Math.round(n/d*100):0}
+function formatEventDate(value){const d=new Date(value);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}
+function formatEventMeta(e){if(e.allDay)return e.location||'Toute la journée';const s=new Date(e.start),en=new Date(e.end);const time=`${s.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}–${en.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`;return e.location?`${time} · ${e.location}`:time}
+async function loadEnsmaCalendar(){
+  try{
+    const response=await fetch(`data/calendar.json?v=${Date.now()}`,{cache:'no-store'});
+    if(!response.ok)return;
+    const data=await response.json();
+    if(!Array.isArray(data.events)||!data.events.length)return;
+    ensma=data.events.map(e=>({date:formatEventDate(e.start),name:e.title||'ENSMA',meta:formatEventMeta(e),start:e.start}));
+  }catch(error){console.info('ENSMA live calendar unavailable; using fallback data.',error)}
+}
 
 function setupTabs(){document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));btn.classList.add('active');document.getElementById(btn.dataset.tab).classList.add('active')}))}
 function renderHeader(){document.getElementById('todayDate').textContent=today.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});document.getElementById('todayDay').textContent=today.toLocaleDateString('fr-FR',{weekday:'long'});document.getElementById('activeProjectsCount').textContent=projects.filter(p=>p.type==='current').length;document.getElementById('nextMilestoneDate').textContent='25 août';document.getElementById('nextMilestoneName').textContent='Paris';document.getElementById('weekLabel').textContent=`${weekDates()[0].toLocaleDateString('fr-FR',{day:'numeric',month:'short'})} – ${weekDates()[6].toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}`}
-function renderWeeklyFocus(){const items=[['Installation / rentrée',70],['Lab Zero',42],['Calendar system',82]];document.getElementById('weeklyFocus').innerHTML=items.map(([n,v])=>`<div class="progress-row"><div class="progress-meta"><span>${n}</span><span>${v}%</span></div><div class="bar"><i style="width:${v}%"></i></div></div>`).join('');document.getElementById('milestonesList').innerHTML=milestones.slice(0,3).map(m=>`<div class="node"><strong>${m.date}</strong><span>${m.name}</span></div>`).join('')}
+function renderWeeklyFocus(){const items=[['Installation / rentrée',70],['Lab Zero',42],['Calendar system',90]];document.getElementById('weeklyFocus').innerHTML=items.map(([n,v])=>`<div class="progress-row"><div class="progress-meta"><span>${n}</span><span>${v}%</span></div><div class="bar"><i style="width:${v}%"></i></div></div>`).join('');document.getElementById('milestonesList').innerHTML=milestones.slice(0,3).map(m=>`<div class="node"><strong>${m.date}</strong><span>${m.name}</span></div>`).join('')}
 function renderTodayHabits(){const el=document.getElementById('todayHabits');el.innerHTML=habits.map(h=>`<label class="habit ${history[todayKey][h]?'done':''}"><input type="checkbox" data-habit="${h}" ${history[todayKey][h]?'checked':''}><span>${h}</span></label>`).join('');el.querySelectorAll('input').forEach(i=>i.addEventListener('change',()=>{history[todayKey][i.dataset.habit]=i.checked;save();renderHabits();renderAnalytics()}))}
 function renderWeek(){const dates=weekDates();document.getElementById('habitWeekRows').innerHTML=habits.map(h=>`<tr><td>${h}</td>${dates.map(d=>`<td><div class="habit-cell ${history[dateKey(d)]?.[h]?'done':''}"></div></td>`).join('')}</tr>`).join('')}
 function renderScores(){const done=completedToday();document.getElementById('habitScore').textContent=`${done}/${habits.length}`;document.getElementById('overviewHabitScore').textContent=`${done}/${habits.length}`;document.getElementById('analyticsHabitScore').textContent=`${pct(done,habits.length)}%`}
 function renderHabits(){renderTodayHabits();renderWeek();renderScores()}
 function renderProjects(filter='all'){const shown=projects.filter(p=>filter==='all'||p.type===filter);document.getElementById('projectsGrid').innerHTML=shown.map(p=>`<article class="project"><div class="project-head"><div><h3>${p.name}</h3><p>${p.desc}</p></div><span class="badge">${p.tag}</span></div><div class="project-meta"><div><span>Priorité</span>${p.priority}</div><div><span>Prochaine action</span>${p.next}</div></div><div class="progress-meta"><span>Progression</span><span>${p.progress}%</span></div><div class="bar"><i style="width:${p.progress}%"></i></div></article>`).join('')}
-function renderCalendar(){document.getElementById('ensmaEvents').innerHTML=ensma.map(e=>`<div class="event"><div class="event-date">${e.date}</div><div><strong>${e.name}</strong><span>${e.meta}</span></div></div>`).join('');document.getElementById('deadlinesList').innerHTML=milestones.map(m=>`<div class="node"><strong>${m.name}</strong><span>${m.date}</span></div>`).join('')}
-function renderAnalytics(){const dates=weekDates();let total=0,possible=0;const rows=habits.map(h=>{const done=dates.filter(d=>history[dateKey(d)]?.[h]).length;total+=done;possible+=7;return[h,pct(done,7)]});document.getElementById('habitAnalytics').innerHTML=rows.map(([h,v])=>`<div><div class="progress-meta"><span>${h}</span><span>${v}%</span></div><div class="bar"><i style="width:${v}%"></i></div></div>`).join('');document.getElementById('weeklyCompletion').textContent=`${pct(total,possible)}%`;const avg=Math.round(projects.filter(p=>p.type==='current').reduce((s,p)=>s+p.progress,0)/projects.filter(p=>p.type==='current').length);document.getElementById('projectsAverage').textContent=`${avg}%`;const best=rows.sort((a,b)=>b[1]-a[1])[0];document.getElementById('bestStreak').textContent=best?best[0]:'—';renderScores()}
+function renderCalendar(){document.getElementById('ensmaEvents').innerHTML=ensma.slice(0,12).map(e=>`<div class="event"><div class="event-date">${e.date}</div><div><strong>${e.name}</strong><span>${e.meta}</span></div></div>`).join('');document.getElementById('deadlinesList').innerHTML=milestones.map(m=>`<div class="node"><strong>${m.name}</strong><span>${m.date}</span></div>`).join('')}
+function renderAnalytics(){const dates=weekDates();let total=0,possible=0;const rows=habits.map(h=>{const done=dates.filter(d=>history[dateKey(d)]?.[h]).length;total+=done;possible+=7;return[h,pct(done,7)]});document.getElementById('habitAnalytics').innerHTML=rows.map(([h,v])=>`<div><div class="progress-meta"><span>${h}</span><span>${v}%</span></div><div class="bar"><i style="width:${v}%"></i></div></div>`).join('');document.getElementById('weeklyCompletion').textContent=`${pct(total,possible)}%`;const current=projects.filter(p=>p.type==='current');const avg=Math.round(current.reduce((s,p)=>s+p.progress,0)/current.length);document.getElementById('projectsAverage').textContent=`${avg}%`;const best=[...rows].sort((a,b)=>b[1]-a[1])[0];document.getElementById('bestStreak').textContent=best?best[0]:'—';renderScores()}
 function renderOpportunities(){document.getElementById('opportunitiesGrid').innerHTML=opportunities.map(o=>`<article class="opportunity"><div class="opportunity-head"><div><h3>${o.name}</h3><p>${o.desc}</p></div><span class="badge">${o.tag}</span></div></article>`).join('')}
 
-setupTabs();renderHeader();renderWeeklyFocus();renderHabits();renderProjects();renderCalendar();renderAnalytics();renderOpportunities();
-document.getElementById('projectFilter').addEventListener('change',e=>renderProjects(e.target.value));
+async function init(){setupTabs();renderHeader();renderWeeklyFocus();renderHabits();renderProjects();renderCalendar();renderAnalytics();renderOpportunities();document.getElementById('projectFilter').addEventListener('change',e=>renderProjects(e.target.value));await loadEnsmaCalendar();renderCalendar()}
+init();
