@@ -9,11 +9,9 @@ create table if not exists public.habit_entries (
   updated_at timestamptz not null default now(),
   primary key (user_id, entry_date, habit_key)
 );
-
 alter table public.habit_entries enable row level security;
 revoke all on table public.habit_entries from anon;
 grant select, insert, update, delete on table public.habit_entries to authenticated;
-
 drop policy if exists "Users can read own habits" on public.habit_entries;
 create policy "Users can read own habits" on public.habit_entries for select to authenticated using ((select auth.uid()) = user_id);
 drop policy if exists "Users can insert own habits" on public.habit_entries;
@@ -33,11 +31,9 @@ create table if not exists public.project_states (
   updated_at timestamptz not null default now(),
   primary key (user_id, project_key)
 );
-
 alter table public.project_states enable row level security;
 revoke all on table public.project_states from anon;
 grant select, insert, update, delete on table public.project_states to authenticated;
-
 drop policy if exists "Users can read own projects" on public.project_states;
 create policy "Users can read own projects" on public.project_states for select to authenticated using ((select auth.uid()) = user_id);
 drop policy if exists "Users can insert own projects" on public.project_states;
@@ -46,3 +42,27 @@ drop policy if exists "Users can update own projects" on public.project_states;
 create policy "Users can update own projects" on public.project_states for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 drop policy if exists "Users can delete own projects" on public.project_states;
 create policy "Users can delete own projects" on public.project_states for delete to authenticated using ((select auth.uid()) = user_id);
+
+create table if not exists public.opportunity_states (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  opportunity_key text not null,
+  status text not null default 'À explorer' check (status in ('À explorer','À surveiller','À préparer','Candidature prévue','Candidaté','En attente','Accepté','Refusé','Archivé')),
+  priority text not null default 'Moyenne' check (priority in ('Basse','Moyenne','Haute','Très haute')),
+  deadline date,
+  next_action text not null default '',
+  source_url text not null default '',
+  notes text not null default '',
+  updated_at timestamptz not null default now(),
+  primary key (user_id, opportunity_key)
+);
+alter table public.opportunity_states enable row level security;
+revoke all on table public.opportunity_states from anon;
+grant select, insert, update, delete on table public.opportunity_states to authenticated;
+drop policy if exists "Users can read own opportunities" on public.opportunity_states;
+create policy "Users can read own opportunities" on public.opportunity_states for select to authenticated using ((select auth.uid()) = user_id);
+drop policy if exists "Users can insert own opportunities" on public.opportunity_states;
+create policy "Users can insert own opportunities" on public.opportunity_states for insert to authenticated with check ((select auth.uid()) = user_id);
+drop policy if exists "Users can update own opportunities" on public.opportunity_states;
+create policy "Users can update own opportunities" on public.opportunity_states for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+drop policy if exists "Users can delete own opportunities" on public.opportunity_states;
+create policy "Users can delete own opportunities" on public.opportunity_states for delete to authenticated using ((select auth.uid()) = user_id);
