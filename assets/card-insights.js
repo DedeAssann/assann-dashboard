@@ -19,7 +19,15 @@ const opportunityInsights={
 'UNITAR / ONU':{last:'UNITAR identifié comme piste',measure:'Fit · international / réseau',options:['UNITAR','Événements ONU','Diplomatie scientifique']}
 };
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function insightHTML(x,isOpportunity=false){const chips=(isOpportunity?x.options:x.tags)||[];return `<div class="card-insights"><div class="insight-line"><span>Dernière action</span><strong>${esc(x.last)}</strong></div><div class="insight-line"><span>${isOpportunity?'Repère':'Mesure'}</span><strong>${esc(x.measure)}</strong></div>${chips.length?`<div class="option-chips">${chips.map(v=>`<span>${esc(v)}</span>`).join('')}</div>`:''}</div>`}
+function insightHTML(x,isOpportunity=false){
+  const chips=(isOpportunity?x.options:x.tags)||[];
+  const chipsLabel=isOpportunity?'Options':'Repères';
+  return `<div class="card-insights">
+    <div class="insight-line"><span class="insight-label">Dernière action</span><strong class="insight-value">${esc(x.last)}</strong></div>
+    <div class="insight-line"><span class="insight-label">${isOpportunity?'Repère':'Mesure'}</span><strong class="insight-value">${esc(x.measure)}</strong></div>
+    ${chips.length?`<div class="insight-chips-row"><span class="insight-label">${chipsLabel}</span><div class="option-chips">${chips.map(v=>`<span>${esc(v)}</span>`).join('')}</div></div>`:''}
+  </div>`
+}
 function decorate(){document.querySelectorAll('.project').forEach(card=>{if(card.querySelector('.card-insights'))return;const name=card.querySelector('h3')?.textContent.trim(),x=projectInsights[name];if(x)card.insertAdjacentHTML('beforeend',insightHTML(x,false))});document.querySelectorAll('.opportunity').forEach(card=>{if(card.querySelector('.card-insights'))return;const name=card.querySelector('h3')?.textContent.trim(),x=opportunityInsights[name];if(x)card.insertAdjacentHTML('beforeend',insightHTML(x,true))})}
 const observer=new MutationObserver(decorate);document.addEventListener('DOMContentLoaded',()=>{decorate();observer.observe(document.getElementById('projectsGrid'),{childList:true});observer.observe(document.getElementById('opportunitiesGrid'),{childList:true})});
 })();
