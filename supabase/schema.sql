@@ -27,10 +27,14 @@ create table if not exists public.project_states (
   progress integer not null default 0 check (progress between 0 and 100),
   priority text not null default 'Moyenne' check (priority in ('Basse','Moyenne','Haute')),
   next_action text not null default '',
+  last_action text not null default '',
+  last_action_at date,
   notes text not null default '',
   updated_at timestamptz not null default now(),
   primary key (user_id, project_key)
 );
+alter table public.project_states add column if not exists last_action text not null default '';
+alter table public.project_states add column if not exists last_action_at date;
 alter table public.project_states enable row level security;
 revoke all on table public.project_states from anon;
 grant select, insert, update, delete on table public.project_states to authenticated;
@@ -50,11 +54,17 @@ create table if not exists public.opportunity_states (
   priority text not null default 'Moyenne' check (priority in ('Basse','Moyenne','Haute','Très haute')),
   deadline date,
   next_action text not null default '',
+  last_action text not null default '',
+  last_action_at date,
+  options jsonb not null default '[]'::jsonb,
   source_url text not null default '',
   notes text not null default '',
   updated_at timestamptz not null default now(),
   primary key (user_id, opportunity_key)
 );
+alter table public.opportunity_states add column if not exists last_action text not null default '';
+alter table public.opportunity_states add column if not exists last_action_at date;
+alter table public.opportunity_states add column if not exists options jsonb not null default '[]'::jsonb;
 alter table public.opportunity_states enable row level security;
 revoke all on table public.opportunity_states from anon;
 grant select, insert, update, delete on table public.opportunity_states to authenticated;
