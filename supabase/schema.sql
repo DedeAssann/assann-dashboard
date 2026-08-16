@@ -142,3 +142,87 @@ drop policy if exists "Users can update own budget settings" on public.budget_se
 create policy "Users can update own budget settings" on public.budget_settings for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 drop policy if exists "Users can delete own budget settings" on public.budget_settings;
 create policy "Users can delete own budget settings" on public.budget_settings for delete to authenticated using ((select auth.uid()) = user_id);
+
+create table if not exists public.profile_projects (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  project_id text not null,
+  name text not null,
+  type text not null default '',
+  tag text not null default '',
+  description text not null default '',
+  progress integer not null default 0 check (progress between 0 and 100),
+  priority text not null default 'Moyenne',
+  next_action text not null default '',
+  last_action text not null default '',
+  last_action_at date,
+  notes text not null default '',
+  archived boolean not null default false,
+  metadata jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, project_id)
+);
+alter table public.profile_projects enable row level security;
+revoke all on table public.profile_projects from anon;
+grant select, insert, update, delete on table public.profile_projects to authenticated;
+drop policy if exists "Users can read own profile projects" on public.profile_projects;
+create policy "Users can read own profile projects" on public.profile_projects for select to authenticated using ((select auth.uid()) = user_id);
+drop policy if exists "Users can insert own profile projects" on public.profile_projects;
+create policy "Users can insert own profile projects" on public.profile_projects for insert to authenticated with check ((select auth.uid()) = user_id);
+drop policy if exists "Users can update own profile projects" on public.profile_projects;
+create policy "Users can update own profile projects" on public.profile_projects for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+drop policy if exists "Users can delete own profile projects" on public.profile_projects;
+create policy "Users can delete own profile projects" on public.profile_projects for delete to authenticated using ((select auth.uid()) = user_id);
+
+create table if not exists public.profile_opportunities (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  opportunity_id text not null,
+  name text not null,
+  organization text not null default '',
+  status text not null default 'A explorer',
+  priority text not null default 'Moyenne',
+  deadline date,
+  source_url text not null default '',
+  next_action text not null default '',
+  notes text not null default '',
+  options jsonb not null default '[]'::jsonb,
+  archived boolean not null default false,
+  metadata jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, opportunity_id)
+);
+alter table public.profile_opportunities enable row level security;
+revoke all on table public.profile_opportunities from anon;
+grant select, insert, update, delete on table public.profile_opportunities to authenticated;
+drop policy if exists "Users can read own profile opportunities" on public.profile_opportunities;
+create policy "Users can read own profile opportunities" on public.profile_opportunities for select to authenticated using ((select auth.uid()) = user_id);
+drop policy if exists "Users can insert own profile opportunities" on public.profile_opportunities;
+create policy "Users can insert own profile opportunities" on public.profile_opportunities for insert to authenticated with check ((select auth.uid()) = user_id);
+drop policy if exists "Users can update own profile opportunities" on public.profile_opportunities;
+create policy "Users can update own profile opportunities" on public.profile_opportunities for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+drop policy if exists "Users can delete own profile opportunities" on public.profile_opportunities;
+create policy "Users can delete own profile opportunities" on public.profile_opportunities for delete to authenticated using ((select auth.uid()) = user_id);
+
+create table if not exists public.profile_calendar_events (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  event_id text not null,
+  title text not null,
+  starts_at timestamptz not null,
+  ends_at timestamptz,
+  location text not null default '',
+  source text not null default 'manual',
+  description text not null default '',
+  metadata jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, event_id)
+);
+alter table public.profile_calendar_events enable row level security;
+revoke all on table public.profile_calendar_events from anon;
+grant select, insert, update, delete on table public.profile_calendar_events to authenticated;
+drop policy if exists "Users can read own calendar events" on public.profile_calendar_events;
+create policy "Users can read own calendar events" on public.profile_calendar_events for select to authenticated using ((select auth.uid()) = user_id);
+drop policy if exists "Users can insert own calendar events" on public.profile_calendar_events;
+create policy "Users can insert own calendar events" on public.profile_calendar_events for insert to authenticated with check ((select auth.uid()) = user_id);
+drop policy if exists "Users can update own calendar events" on public.profile_calendar_events;
+create policy "Users can update own calendar events" on public.profile_calendar_events for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+drop policy if exists "Users can delete own calendar events" on public.profile_calendar_events;
+create policy "Users can delete own calendar events" on public.profile_calendar_events for delete to authenticated using ((select auth.uid()) = user_id);
