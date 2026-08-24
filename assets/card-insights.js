@@ -1,6 +1,6 @@
 (()=>{
-// Status layer — 24 Aug 2026.
-// Keeps current operational information visible without rewriting the main app.
+// Status layer — 24 Aug 2026 evening.
+// Only current, actionable information belongs here.
 
 const projectInsights={
   'Lab Zero':{last:'Sessions 0–6 terminées ; socle LabCore validé',measure:'NEXT · Session 7 / I²C',tags:['PlatformIO','ESP32','PWM','Servo']},
@@ -24,58 +24,17 @@ const opportunityInsights={
 };
 
 const currentAlerts=[
-  {id:'ast-rentree',label:'1 sept.',text:'Rentrée ENSMA — admis sur titre confirmée par Mme Delaune'},
-  {id:'return-poitiers',label:'À sécuriser',text:'Retour Paris → Poitiers du 30 août : aucun billet retour retrouvé dans les mails/calendrier'},
-  {id:'supabase-pause',label:'Dashboard',text:'Supabase annonce que le projet assann-dashboard risque d’être mis en pause pour inactivité'},
-  {id:'notilus-cnrs',label:'À vérifier',text:'NOTILUS CNRS signale une mission terminée sans état de frais déclaré'}
+  {id:'registration-payment',label:'ENSMA',text:'Dossier d’inscription validé. Frais d’inscription à régler via WebAurion dès que l’accès fonctionne.'},
+  {id:'ensma-account',label:'Compte ENSMA',text:'Compte informatique reçu. L’adresse mail ENSMA devient le canal officiel pour toute la scolarité.'},
+  {id:'ast-rentree',label:'1 sept. · 13h40',text:'Rentrée admis sur titre : accueil ENSMA, contrôle d’identité, puis réunion en A102 à 14h. Prendre CNI ou passeport.'},
+  {id:'supabase-pause',label:'Dashboard',text:'Supabase annonce que le projet assann-dashboard risque d’être mis en pause pour inactivité.'}
 ];
 
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function insightHTML(x,isOpportunity=false){const chips=(isOpportunity?x.options:x.tags)||[],chipsLabel=isOpportunity?'Options':'Repères';return `<div class="card-insights"><div class="insight-line"><span class="insight-label">Dernière action</span><strong class="insight-value">${esc(x.last)}</strong></div><div class="insight-line"><span class="insight-label">${isOpportunity?'Repère':'Mesure'}</span><strong class="insight-value">${esc(x.measure)}</strong></div>${chips.length?`<div class="insight-chips-row"><span class="insight-label">${chipsLabel}</span><div class="option-chips">${chips.map(v=>`<span>${esc(v)}</span>`).join('')}</div></div>`:''}</div>`}
-
-function decorateCards(){
-  document.querySelectorAll('.project').forEach(card=>{
-    if(card.querySelector('.card-insights'))return;
-    const name=card.querySelector('h3')?.textContent.trim(),x=projectInsights[name];
-    if(x)card.insertAdjacentHTML('beforeend',insightHTML(x,false));
-  });
-  document.querySelectorAll('.opportunity').forEach(card=>{
-    if(card.querySelector('.card-insights'))return;
-    const name=card.querySelector('h3')?.textContent.trim(),x=opportunityInsights[name];
-    if(x)card.insertAdjacentHTML('beforeend',insightHTML(x,true));
-  });
-}
-
-function injectCurrentAlerts(){
-  const box=document.getElementById('attentionList');
-  if(!box)return;
-  currentAlerts.slice(0,4).reverse().forEach(a=>{
-    if(box.querySelector(`[data-current-alert="${a.id}"]`))return;
-    box.insertAdjacentHTML('afterbegin',`<div class="node" data-current-alert="${a.id}"><strong>${esc(a.label)}</strong><span>${esc(a.text)}</span></div>`);
-  });
-}
-
-function injectCalendarContext(){
-  const ensmaList=document.getElementById('ensmaEvents');
-  if(ensmaList && !document.getElementById('astCalendarNotice')){
-    ensmaList.insertAdjacentHTML('beforebegin',`<div id="astCalendarNotice" class="callout" style="margin-bottom:12px"><strong>AST · rentrée confirmée</strong><span>Tu es attendu le 1er septembre. Le miroir Aurion affiche l’accueil général du 7 septembre pour les autres 1A.</span></div>`);
-  }
-  const deadlines=document.getElementById('deadlinesList');
-  if(deadlines && !deadlines.querySelector('[data-milestone="ast-2026"]')){
-    deadlines.insertAdjacentHTML('afterbegin',`<div class="node" data-milestone="ast-2026"><strong>1 septembre</strong><span>Rentrée ENSMA — admis sur titre (confirmée par la scolarité)</span></div>`);
-  }
-  if(deadlines && !deadlines.querySelector('[data-milestone="revolut-2027"]')){
-    deadlines.insertAdjacentHTML('beforeend',`<div class="node" data-milestone="revolut-2027"><strong>12 février 2027</strong><span>Revolut — mettre à jour les documents d’identité avant restriction du compte</span></div>`);
-  }
-}
-
+function decorateCards(){document.querySelectorAll('.project').forEach(card=>{if(card.querySelector('.card-insights'))return;const name=card.querySelector('h3')?.textContent.trim(),x=projectInsights[name];if(x)card.insertAdjacentHTML('beforeend',insightHTML(x,false))});document.querySelectorAll('.opportunity').forEach(card=>{if(card.querySelector('.card-insights'))return;const name=card.querySelector('h3')?.textContent.trim(),x=opportunityInsights[name];if(x)card.insertAdjacentHTML('beforeend',insightHTML(x,true))})}
+function injectCurrentAlerts(){const box=document.getElementById('attentionList');if(!box)return;box.querySelectorAll('[data-current-alert]').forEach(n=>n.remove());currentAlerts.slice().reverse().forEach(a=>box.insertAdjacentHTML('afterbegin',`<div class="node" data-current-alert="${a.id}"><strong>${esc(a.label)}</strong><span>${esc(a.text)}</span></div>`))}
+function injectCalendarContext(){const ensmaList=document.getElementById('ensmaEvents');if(ensmaList&&!document.getElementById('astCalendarNotice'))ensmaList.insertAdjacentHTML('beforebegin',`<div id="astCalendarNotice" class="callout" style="margin-bottom:12px"><strong>AST · mardi 1er septembre</strong><span>Accueil à 13h40, contrôle d’identité, réunion A102 à 14h. Le 7 septembre concerne les admis sur concours.</span></div>`);const deadlines=document.getElementById('deadlinesList');if(deadlines&&!deadlines.querySelector('[data-milestone="registration-payment"]'))deadlines.insertAdjacentHTML('afterbegin',`<div class="node" data-milestone="registration-payment"><strong>Dès accès WebAurion</strong><span>Régler les frais d’inscription ENSMA — dossier déjà validé</span></div>`);if(deadlines&&!deadlines.querySelector('[data-milestone="revolut-2027"]'))deadlines.insertAdjacentHTML('beforeend',`<div class="node" data-milestone="revolut-2027"><strong>12 février 2027</strong><span>Revolut — mettre à jour les documents d’identité avant restriction du compte</span></div>`)}
 function refreshDecorations(){decorateCards();injectCurrentAlerts();injectCalendarContext()}
-
-const observer=new MutationObserver(()=>refreshDecorations());
-document.addEventListener('DOMContentLoaded',()=>{
-  refreshDecorations();
-  ['projectsGrid','opportunitiesGrid','attentionList','ensmaEvents','deadlinesList'].forEach(id=>{
-    const el=document.getElementById(id);if(el)observer.observe(el,{childList:true,subtree:false});
-  });
-});
+const observer=new MutationObserver(()=>refreshDecorations());document.addEventListener('DOMContentLoaded',()=>{refreshDecorations();['projectsGrid','opportunitiesGrid','attentionList','ensmaEvents','deadlinesList'].forEach(id=>{const el=document.getElementById(id);if(el)observer.observe(el,{childList:true,subtree:false})})});
 })();
