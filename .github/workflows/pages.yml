@@ -38,8 +38,24 @@ jobs:
       - name: Export ENSMA Mirror calendar
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_ENSMA_CALENDAR_ID: ${{ secrets.GOOGLE_ENSMA_CALENDAR_ID }}
           GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
         run: python scripts/export_calendar.py
+
+      - name: Validate generated site
+        env:
+          REQUIRE_FRESH_CALENDAR: "1"
+        run: |
+          node --check assets/app-v2.js
+          node --check assets/cloud-v2.js
+          python scripts/validate_site.py
+
+      - name: Stage public files
+        run: |
+          mkdir _site
+          cp index.html _site/
+          cp -R assets data _site/
+          touch _site/.nojekyll
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -47,7 +63,7 @@ jobs:
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
 
       - name: Deploy
         id: deployment

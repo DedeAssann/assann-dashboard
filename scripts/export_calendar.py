@@ -11,13 +11,16 @@ PARIS = ZoneInfo("Europe/Paris")
 OUT = Path("data/calendar.json")
 
 
-def main():
-    raw_credentials = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
-    calendar_id = os.getenv("GOOGLE_CALENDAR_ID", "").strip()
+def require_env(name):
+    value = os.getenv(name, "").strip()
+    if not value:
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return value
 
-    if not raw_credentials or not calendar_id:
-        print("Google Calendar secrets are not configured; keeping dashboard fallback data.")
-        return
+
+def main():
+    raw_credentials = require_env("GOOGLE_SERVICE_ACCOUNT_JSON")
+    calendar_id = os.getenv("GOOGLE_ENSMA_CALENDAR_ID", "").strip() or require_env("GOOGLE_CALENDAR_ID")
 
     info = json.loads(raw_credentials)
     credentials = service_account.Credentials.from_service_account_info(
@@ -31,6 +34,7 @@ def main():
     time_max = (now + timedelta(days=180)).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
     events = []
+    seen = set()
     page_token = None
     while True:
         response = service.events().list(
@@ -46,11 +50,16 @@ def main():
         for item in response.get("items", []):
             start = item.get("start", {})
             end = item.get("end", {})
+            event_id = item.get("id")
+            event_start = start.get("dateTime") or start.get("date")
+            if not event_id or not event_start or event_id in seen:
+                continue
+            seen.add(event_id)
             events.append({
-                "id": item.get("id"),
+                "id": event_id,
                 "title": item.get("summary", "ENSMA"),
                 "location": item.get("location", ""),
-                "start": start.get("dateTime") or start.get("date"),
+                "start": event_start,
                 "end": end.get("dateTime") or end.get("date"),
                 "allDay": "date" in start,
             })
@@ -61,8 +70,10 @@ def main():
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     payload = {
+        "schemaVersion": 2,
         "generatedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "source": "ENSMA Mirror",
+        "visibility": "public-school-calendar",
         "timezone": "Europe/Paris",
         "events": events,
     }

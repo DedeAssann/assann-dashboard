@@ -226,3 +226,14 @@ drop policy if exists "Users can update own calendar events" on public.profile_c
 create policy "Users can update own calendar events" on public.profile_calendar_events for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 drop policy if exists "Users can delete own calendar events" on public.profile_calendar_events;
 create policy "Users can delete own calendar events" on public.profile_calendar_events for delete to authenticated using ((select auth.uid()) = user_id);
+
+-- Read-path indexes used by the dashboard. The primary keys already cover writes.
+create index if not exists habit_entries_user_date_idx on public.habit_entries (user_id, entry_date desc);
+create index if not exists profile_projects_user_updated_idx on public.profile_projects (user_id, updated_at desc);
+create index if not exists profile_opportunities_user_updated_idx on public.profile_opportunities (user_id, updated_at desc);
+create index if not exists profile_calendar_events_user_start_idx on public.profile_calendar_events (user_id, starts_at);
+create index if not exists recipes_user_updated_idx on public.recipes (user_id, updated_at desc);
+create index if not exists transactions_user_date_idx on public.transactions (user_id, transaction_date desc);
+
+comment on table public.project_states is 'Legacy state-only table kept for one-time migration into profile_projects.';
+comment on table public.opportunity_states is 'Legacy state-only table kept for one-time migration into profile_opportunities.';
