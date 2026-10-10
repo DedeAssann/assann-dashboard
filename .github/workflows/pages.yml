@@ -54,6 +54,7 @@ jobs:
         run: |
           mkdir _site
           cp index.html _site/
+          cp stages-1a-2027.html _site/
           cp -R assets data _site/
           touch _site/.nojekyll
 
