@@ -27,7 +27,8 @@ const currentAlerts=[
   {id:'forum-entreprises',label:'15 oct. · Forum Entreprises',text:'Priorité stage 1A : venir avec CV à jour, pitch de 30 s et shortlist Toulouse (Airbus, ONERA, Safran, Liebherr, Thales/CNES selon présence).'},
   {id:'stage-2027',label:'Stage été 2027',text:'Recherche relancée. Toulouse reste prioritaire, sans fermer CERN ni les grands labos/instituts si une offre compatible apparaît.'},
   {id:'mobility-iit-ge4',label:'6 nov. · Mobilité',text:'Deadline IIT Chicago / GE4. Toute demande de mobilité ou de bourse passe par le service Relations Internationales.'},
-  {id:'mobility-all',label:'4 déc. · Mobilité',text:'Deadline S5/S5B/double diplôme/candidature libre pour toutes les autres destinations.'}
+  {id:'mobility-all',label:'4 déc. · Mobilité',text:'Deadline S5/S5B/double diplôme/candidature libre pour toutes les autres destinations.'},
+  {id:'driving-license',label:'Permis B · hiver/été',text:'Objectif : régler ASSR2/ASR en novembre, passer le Code en décembre 2026, puis organiser la conduite pour viser le permis pratique pendant l’été 2027.'}
 ];
 
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -36,6 +37,7 @@ function decorateCards(){document.querySelectorAll('.project').forEach(card=>{if
 function injectCurrentAlerts(){const box=document.getElementById('attentionList');if(!box)return;box.querySelectorAll('[data-current-alert]').forEach(n=>n.remove());currentAlerts.slice().reverse().forEach(a=>box.insertAdjacentHTML('afterbegin',`<div class="node" data-current-alert="${a.id}"><strong>${esc(a.label)}</strong><span>${esc(a.text)}</span></div>`))}
 function injectCalendarContext(){
   const ensmaList=document.getElementById('ensmaEvents');
+  if(ensmaList&&!document.getElementById('permisNotice'))ensmaList.insertAdjacentHTML('beforebegin',`<div id="permisNotice" class="callout" style="margin-bottom:12px"><strong>Permis B — repères administratifs</strong><span>ASSR2 : requise pour la délivrance d’un premier permis si tu as moins de 21 ans. Si tu n’as pas l’ASSR2 et n’es plus scolarisé dans le secondaire, l’ASR peut la remplacer et se passe gratuitement via un GRETA. Au-delà de 21 ans, ASSR2/ASR n’est plus exigée pour la délivrance du permis.</span></div>`);
   if(ensmaList&&!document.getElementById('riCalendarNotice'))ensmaList.insertAdjacentHTML('beforebegin',`<div id="riCalendarNotice" class="callout" style="margin-bottom:12px"><strong>Relations Internationales</strong><span>Contact : Laura Montois · laura.montois@isae-ensma.fr. Les aides/bourses internationales passent par le service RI.</span></div>`);
   const deadlines=document.getElementById('deadlinesList');
   const items=[
@@ -44,7 +46,10 @@ function injectCalendarContext(){
     ['iit-ge4','6 novembre 2026','Mobilité — deadline IIT Chicago / GE4'],
     ['tedx','28 novembre 2026','TEDxPoitiers à l’ISAE-ENSMA — thème « Over the Rainbow »'],
     ['mobility-all','4 décembre 2026','Mobilité — deadline toutes autres destinations S5/S5B/DD/candidature libre'],
-    ['mobility-s4','30 juin 2027','Mobilité S4 — deadline de candidature']
+    ['mobility-s4','30 juin 2027','Mobilité S4 — deadline de candidature'],
+    ['assr-asr','15 novembre 2026','Permis B — vérifier/régler le point ASSR2 ou ASR avant l’inscription'],
+    ['code-route','Décembre 2026','Permis B — objectif : passer l’ETG / Code de la route'],
+    ['permis-pratique','Été 2027','Permis B — objectif : organiser la conduite et passer l’épreuve pratique']
   ];
   items.forEach(([id,date,text])=>{if(deadlines&&!deadlines.querySelector(`[data-milestone="${id}"]`))deadlines.insertAdjacentHTML('beforeend',`<div class="node" data-milestone="${id}"><strong>${date}</strong><span>${text}</span></div>`)});
 }
