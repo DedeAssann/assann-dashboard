@@ -28,7 +28,6 @@ const currentAlerts=[
   {id:'stage-2027',label:'Stage été 2027',text:'Recherche relancée. Toulouse reste prioritaire, sans fermer CERN ni les grands labos/instituts si une offre compatible apparaît.'},
   {id:'mobility-iit-ge4',label:'6 nov. · Mobilité',text:'Deadline IIT Chicago / GE4. Toute demande de mobilité ou de bourse passe par le service Relations Internationales.'},
   {id:'mobility-all',label:'4 déc. · Mobilité',text:'Deadline S5/S5B/double diplôme/candidature libre pour toutes les autres destinations.'},
-  {id:'driving-license',label:'Permis B · hiver/été',text:'Objectif : régler ASSR2/ASR en novembre, passer le Code en décembre 2026, puis organiser la conduite pour viser le permis pratique pendant l’été 2027.'}
 ];
 
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -37,7 +36,6 @@ function decorateCards(){document.querySelectorAll('.project').forEach(card=>{if
 function injectCurrentAlerts(){const box=document.getElementById('attentionList');if(!box)return;box.querySelectorAll('[data-current-alert]').forEach(n=>n.remove());currentAlerts.slice().reverse().forEach(a=>box.insertAdjacentHTML('afterbegin',`<div class="node" data-current-alert="${a.id}"><strong>${esc(a.label)}</strong><span>${esc(a.text)}</span></div>`))}
 function injectCalendarContext(){
   const ensmaList=document.getElementById('ensmaEvents');
-  if(ensmaList&&!document.getElementById('permisNotice'))ensmaList.insertAdjacentHTML('beforebegin',`<div id="permisNotice" class="callout" style="margin-bottom:12px"><strong>Permis B — repères administratifs</strong><span>ASSR2 : requise pour la délivrance d’un premier permis si tu as moins de 21 ans. Si tu n’as pas l’ASSR2 et n’es plus scolarisé dans le secondaire, l’ASR peut la remplacer et se passe gratuitement via un GRETA. Au-delà de 21 ans, ASSR2/ASR n’est plus exigée pour la délivrance du permis.</span></div>`);
   if(ensmaList&&!document.getElementById('riCalendarNotice'))ensmaList.insertAdjacentHTML('beforebegin',`<div id="riCalendarNotice" class="callout" style="margin-bottom:12px"><strong>Relations Internationales</strong><span>Contact : Laura Montois · laura.montois@isae-ensma.fr. Les aides/bourses internationales passent par le service RI.</span></div>`);
   const deadlines=document.getElementById('deadlinesList');
   const items=[
@@ -46,13 +44,26 @@ function injectCalendarContext(){
     ['iit-ge4','6 novembre 2026','Mobilité — deadline IIT Chicago / GE4'],
     ['tedx','28 novembre 2026','TEDxPoitiers à l’ISAE-ENSMA — thème « Over the Rainbow »'],
     ['mobility-all','4 décembre 2026','Mobilité — deadline toutes autres destinations S5/S5B/DD/candidature libre'],
-    ['mobility-s4','30 juin 2027','Mobilité S4 — deadline de candidature'],
-    ['assr-asr','15 novembre 2026','Permis B — vérifier/régler le point ASSR2 ou ASR avant l’inscription'],
-    ['code-route','Décembre 2026','Permis B — objectif : passer l’ETG / Code de la route'],
-    ['permis-pratique','Été 2027','Permis B — objectif : organiser la conduite et passer l’épreuve pratique']
+    ['mobility-s4','30 juin 2027','Mobilité S4 — deadline de candidature']
   ];
   items.forEach(([id,date,text])=>{if(deadlines&&!deadlines.querySelector(`[data-milestone="${id}"]`))deadlines.insertAdjacentHTML('beforeend',`<div class="node" data-milestone="${id}"><strong>${date}</strong><span>${text}</span></div>`)});
 }
-function refreshDecorations(){decorateCards();injectCurrentAlerts();injectCalendarContext()}
+function injectPermitProject(){
+  const grid=document.getElementById('projectsGrid');
+  if(!grid||document.getElementById('permitProjectCard'))return;
+  const card=document.createElement('article');
+  card.id='permitProjectCard';
+  card.className='project';
+  card.innerHTML=`<div class="project-head"><div><h3>Permis B</h3><p>Objectif personnel · été 2027</p></div><span class="badge">Vie perso</span></div>
+    <div class="project-meta"><div><span>Statut</span>Planifié</div><div><span>Prochaine action</span>Vérifier ASSR2 / ASR avant mi-novembre</div></div>
+    <div class="progress-meta"><span>Roadmap</span><span>3 étapes</span></div>
+    <div class="card-insights">
+      <div class="insight-line"><span class="insight-label">1 · Novembre 2026</span><strong class="insight-value">ASSR2 / ASR</strong></div>
+      <div class="insight-line"><span class="insight-label">2 · Décembre 2026</span><strong class="insight-value">Passer le Code</strong></div>
+      <div class="insight-line"><span class="insight-label">3 · Été 2027</span><strong class="insight-value">Conduite + épreuve pratique</strong></div>
+    </div>`;
+  grid.appendChild(card);
+}
+function refreshDecorations(){decorateCards();injectCurrentAlerts();injectCalendarContext();injectPermitProject()}
 const observer=new MutationObserver(()=>refreshDecorations());document.addEventListener('DOMContentLoaded',()=>{refreshDecorations();['projectsGrid','opportunitiesGrid','attentionList','ensmaEvents','deadlinesList'].forEach(id=>{const el=document.getElementById(id);if(el)observer.observe(el,{childList:true,subtree:false})})});
 })();
