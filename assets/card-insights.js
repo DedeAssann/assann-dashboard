@@ -33,7 +33,16 @@ const currentAlerts=[
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function insightHTML(x,isOpportunity=false){const chips=(isOpportunity?x.options:x.tags)||[],chipsLabel=isOpportunity?'Options':'Repères';return `<div class="card-insights"><div class="insight-line"><span class="insight-label">Dernière action</span><strong class="insight-value">${esc(x.last)}</strong></div><div class="insight-line"><span class="insight-label">${isOpportunity?'Repère':'Mesure'}</span><strong class="insight-value">${esc(x.measure)}</strong></div>${chips.length?`<div class="insight-chips-row"><span class="insight-label">${chipsLabel}</span><div class="option-chips">${chips.map(v=>`<span>${esc(v)}</span>`).join('')}</div></div>`:''}</div>`}
 function decorateCards(){document.querySelectorAll('.project').forEach(card=>{if(card.querySelector('.card-insights'))return;const name=card.querySelector('h3')?.textContent.trim(),x=projectInsights[name];if(x)card.insertAdjacentHTML('beforeend',insightHTML(x,false))});document.querySelectorAll('.opportunity').forEach(card=>{if(card.querySelector('.card-insights'))return;const name=card.querySelector('h3')?.textContent.trim(),x=opportunityInsights[name];if(x)card.insertAdjacentHTML('beforeend',insightHTML(x,true))})}
-function injectCurrentAlerts(){const box=document.getElementById('attentionList');if(!box)return;box.querySelectorAll('[data-current-alert]').forEach(n=>n.remove());currentAlerts.slice().reverse().forEach(a=>box.insertAdjacentHTML('afterbegin',`<div class="node" data-current-alert="${a.id}"><strong>${esc(a.label)}</strong><span>${esc(a.text)}</span></div>`))}
+function injectCurrentAlerts(){
+  const box=document.getElementById('attentionList');
+  if(!box)return;
+  const existing=[...box.querySelectorAll('[data-current-alert]')];
+  const expectedIds=currentAlerts.map(a=>a.id);
+  const alreadyCurrent=existing.length===currentAlerts.length&&expectedIds.every(id=>box.querySelector(`[data-current-alert="${id}"]`));
+  if(alreadyCurrent)return;
+  existing.forEach(n=>n.remove());
+  currentAlerts.slice().reverse().forEach(a=>box.insertAdjacentHTML('afterbegin',`<div class="node" data-current-alert="${a.id}"><strong>${esc(a.label)}</strong><span>${esc(a.text)}</span></div>`));
+}
 function injectCalendarContext(){
   const ensmaList=document.getElementById('ensmaEvents');
   if(ensmaList&&!document.getElementById('riCalendarNotice'))ensmaList.insertAdjacentHTML('beforebegin',`<div id="riCalendarNotice" class="callout" style="margin-bottom:12px"><strong>Relations Internationales</strong><span>Contact : Laura Montois · laura.montois@isae-ensma.fr. Les aides/bourses internationales passent par le service RI.</span></div>`);
