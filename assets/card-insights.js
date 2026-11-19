@@ -6,6 +6,8 @@ const projectInsights={
   'Lab Zero':{last:'Sessions 0–6 terminées ; socle LabCore validé',measure:'NEXT · Session 7 / I²C',tags:['PlatformIO','ESP32','PWM','Servo']},
   'LabVision':{last:'Projet actif après la bifurcation depuis Lab Zero',measure:'NEXT · protocole capture + plateau',tags:['Vision','3D','Photogrammétrie','COLMAP']},
   'Astrophotography Pipeline':{last:'Pipeline FITS disponible comme base réutilisable',measure:'Potentiel · Exoplanet Watch',tags:['Python','FITS','Image processing']},
+  'Asteroid Tracker':{last:'Projet retenu comme banc d’essai du workflow cloud / ENSMA',measure:'NEXT · repo + premier feed NASA/JPL NEO',tags:['NASA','JPL','NEO','Python','Astrodynamique']},
+  'Mars Data Lab':{last:'Concept retenu comme projet scientifique plus ambitieux',measure:'APRÈS MVP · définir la première question scientifique',tags:['Mars','PDS','Python','Mission data']},
   'Stage Toulouse':{last:'Recherche relancée · Toulouse prioritaire sans fermer les belles opportunités externes',measure:'NEXT · CV + shortlist + Forum Entreprises 15 oct.',tags:['Toulouse','Airbus','ONERA','Safran','Liebherr','CERN']},
   'Finance IA':{last:'Mis en veille pour réduire la charge mentale',measure:'Pas de charge hebdo',tags:['Finance','IA']},
   'Boutique bijoux Lily':{last:'Projet mis de côté par décision de Lily',measure:'Archive · non prioritaire',tags:['Ne pas planifier']},
